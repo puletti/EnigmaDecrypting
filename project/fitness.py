@@ -1,4 +1,5 @@
-import math
+import math 
+import numpy as np
 
 class TrigramFitness:
     epsilon = 1e-10
@@ -35,7 +36,7 @@ class TrigramFitness:
             fitness += self.trigrams[self.tri_index(current, next1, next2)]
         fitness /= len(text)    # Normalize fitness to per-character, to make it comparable with other fitness functions
         #fitness = 10 ** fitness
-        return fitness
+        return fitness/len(text)
 
 class BigramFitness:
     epsilon = 1e-10
@@ -136,9 +137,64 @@ class QuadrigramFitness:
         fitness /= len(text)    # Normalize fitness to per-character, to make it comparable with other fitness functions
         #fitness = 10 ** fitness
         return fitness
+    
+    #Index of coincidence. The probability of any random two letters being identical. 
+    #Tends to be higher for proper sentences than for random encrypted text.
+def ioc(text):
+    histogram = [0] * 26
+    for c in text:
+        histogram[ord(c) - 65] += 1
+
+    n = len(text)
+    total = 0.0
+
+    for v in histogram:
+        total += v * (v - 1)
+
+    ic = total / (n * (n - 1))
+    #return the corresponding value in the normal distribution with mean 0.055 and variance 0.0006
+    fitic =(np.exp(-(ic-0.055)**2/(2*0.000006))/(np.sqrt(2*np.pi*0.000006)))
+    return fitic
+
+
 # Example usage:
-# text_to_score = "IFWEAREGOINGTODEFEATTHEENEMYWEHAVEGOTTOSTARTGETTINGBUSY"
-# text_to_score = "BHAYDGUFYGADVHABNAMLZKJSGEPQBHDFJNZMXBTUHDJAKDJBDNFJCKS"
-# quadgram_fitness = QuadrigramFitness()
-# score = quadgram_fitness.score(text_to_score)
-# print("Fitness Score:", score)
+# text_to_score = ["IFIHADAHAMMER", "HELLOEVERYONE", "THEWEATHERISFINE", "THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG", "THISISATEST", "LASTNIGHTSHESAIDBABYIFEELSODOWN", "NEVERMINDIMUSEFULL",
+#                  "INMANYWAYSTHEYMISSTHEGOODOLDDAYS", "THEYWERESOBAD", "THEYDIDNTHAVEANYSNOW", "INFACTTHEYDIDNTHAVEANYTHINGYOUKNOW", "THEYDIDNTEVENHAVEAWAYTOGETOUTOFBED",
+#                  "LUCASHADBEENPLANNINGTHEATTACKFORTWOWEEKS", "HEHADBEENWATCHINGTHEMILLFORTHEPASTMONTH", "HEKNEWTHATTHEGUARDSWEREFEWANDFARBETWEEN",
+#                  "ITSRARE", "IDONTKNOWWHATITMEANS", "BUTITMEANSSOMETHING", "ITSNOTJUSTSOMETHINGTHATHAPPENED", "ITSNOTJUSTSOMETHINGTHATHAPPENEDTOME", "ITSNOTJUSTSOMETHINGTHATHAPPENEDTOMEANDMYFAMILY",
+#                  "WHATEVERITIS", "THEARMYISCOMING", "HOUSTONWEHAVEAPROBLEM", "LEARNINGHOWTOCODE", "ITSCLEARTHATYOUARENOGOOD", "MAYBE", "IFIHADAHAMMER", "HELLOEVERYONE", "THEWEATHERISFINE", "THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG", "THISISATEST", "LASTNIGHTSHESAIDBABYIFEELSODOWN", "NEVERMINDIMUSEFULL",
+#                  "INMANYWAYSTHEYMISSTHEGOODOLDDAYS", "THEYWERESOBAD", "THEYDIDNTHAVEANYSNOW", "INFACTTHEYDIDNTHAVEANYTHINGYOUKNOW", "THEYDIDNTEVENHAVEAWAYTOGETOUTOFBED",
+#                  "LUCASHADBEENPLANNINGTHEATTACKFORTWOWEEKS", "HEHADBEENWATCHINGTHEMILLFORTHEPASTMONTH", "HEKNEWTHATTHEGUARDSWEREFEWANDFARBETWEEN",
+#                  "ITSRARE", "IDONTKNOWWHATITMEANS", "BUTITMEANSSOMETHING", "ITSNOTJUSTSOMETHINGTHATHAPPENED", "ITSNOTJUSTSOMETHINGTHATHAPPENEDTOME", "ITSNOTJUSTSOMETHINGTHATHAPPENEDTOMEANDMYFAMILY",
+#                  "WHATEVERITIS", "THEARMYISCOMING", "HOUSTONWEHAVEAPROBLEM", "LEARNINGHOWTOCODE", "ITSCLEARTHATYOUARENOGOOD", "MAYBE"]
+# randtext = ["NVHUQIMDBUVWQ", "NOAOUNRAOIUNEARCNVKVNJIZP", "JFOUT", "CCHVVVQAH", "XCGWJHRFJHGVDOERM", "CPTTPDQUXHUYNCVVUTQBPZUD", "KRJTVKEZMTRYCQEKFBZIFUAQOATQWE", "BSUQPTIEUHFBNDJVJVBAYGCAJDCNJAIGMKZOMVHBEWAQ",
+#             "OWIWUEBNZMXJHBAH", "NDJ", "PQOAMCGDHZNCIWU", "PQOUEBZNCMHHDJABCGRTAICHBA", "PQOEUBCNZJSK", "GFTUUAZBNCMSDKWIIURGBD", "NMVXKKAH", "WRCHABDJJDJSKOA"]
+# fit =[]
+# fitrand = []
+# for text in randtext:
+#     import matplotlib.pyplot as plt
+#     import numpy as np
+#     #plot the distribution of the ioC for the given texts in a single histogram
+#     fitrand.append(ioc(text))
+
+# plt.hist(fitrand, bins=60)
+# #PLOT A normal distribution with mean and variance of the ioc of the given texts
+# plt.plot(np.linspace(0, 0.13, 100),np.exp(-(np.linspace(0, 0.13, 100)-np.mean(fitrand))**2/(2*np.var(fitrand)))/(np.sqrt(2*np.pi*np.var(fitrand))))
+# plt.show()
+# print("the mean of the ioc of the given texts is:", np.mean(fitrand), "and the variance is:", np.var(fitrand))
+# for text in text_to_score:
+#     import matplotlib.pyplot as plt
+#     #plot the distribution of the ioC for the given texts in a single histogram
+#     fit.append(ioc(text))
+
+# plt.hist(fit, bins=60)
+# #PLOT A normal distribution with mean and variance of the ioc of the given texts
+
+# plt.plot(np.linspace(0, 0.13, 100),np.exp(-(np.linspace(0, 0.13, 100)-np.mean(fit))**2/(2*np.var(fit)))/(np.sqrt(2*np.pi*np.var(fit))))
+# plt.show()
+# print("the mean of the ioc of the given texts is:", np.mean(fit), "and the variance is:", np.var(fit))
+# #text_to_score = "BSUQPTIEUHFBNDJVJVBAYGCAJDCNJAIGMKZOMVHBEWAQ"
+# # quadgram_fitness = QuadrigramFitness()
+# #score = ioc(text_to_score)
+# #print("Fitness Score:", score)
+# print(np.linspace(0, 0.13, 100),np.exp(-(np.linspace(0, 0.13, 100)-np.mean(fit))**2/(2*np.var(fit)))/(np.sqrt(2*np.pi*np.var(fit))))
